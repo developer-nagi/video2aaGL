@@ -1,0 +1,21 @@
+{
+  "liveSassCompile.settings.formats": [
+    {
+      "format": "compressed",
+      "extensionName": ".css"
+    }
+  ],
+  "liveSassCompile.settings.includeItems": ["styles/**"],
+  "liveSassCompile.settings.autoprefix": [
+    "last 2 versions",
+    "Android >= 4",
+    "ios_saf >= 8"
+  ],
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "terminal.integrated.defaultProfile.windows": "Command Prompt",
+  "files.eol": "\n"
+}
