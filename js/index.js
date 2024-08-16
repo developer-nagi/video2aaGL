@@ -2,6 +2,7 @@ window.onload = async () => {
   const video = document.querySelector("#camera");
   const backCanvas = document.querySelector("#picture");
   const aaCanvas = document.querySelector("#aaAreaCanvas");
+  const bufferCanvas = document.createElement("canvas");
 
   /*** カメラ使いたい人向け→videoのsrcは消しておく */
   // // カメラ設定
@@ -36,13 +37,17 @@ window.onload = async () => {
   let fpsTimer = 0; // FPS計測用タイマー
   let fps = 0; // FPS
 
+  // キャンバスのコンテキスト
   const ctx = backCanvas.getContext("2d");
   const ctxC = aaCanvas.getContext("2d");
+  const bufCtx = bufferCanvas.getContext("2d");
 
   // フォントサイズが変わった時の処理
   const validChange = () => {
     aaCanvas.width = backCanvas.width;
     aaCanvas.height = backCanvas.height;
+    bufferCanvas.width = aaCanvas.width;
+    bufferCanvas.height = aaCanvas.height;
     aaCanvas.style.backgroundColor = "white";
   };
 
@@ -69,9 +74,9 @@ window.onload = async () => {
     );
 
     // テキスト描画の初期化
-    ctxC.textAlign = "start";
-    ctxC.fillStyle = "white";
-    ctxC.fillRect(0, 0, aaCanvas.width, aaCanvas.height);
+    bufCtx.textAlign = "start";
+    bufCtx.fillStyle = "white";
+    bufCtx.fillRect(0, 0, aaCanvas.width, aaCanvas.height);
 
     // テキスト描画関係初期化
     let textLineCount = 0;
@@ -79,8 +84,8 @@ window.onload = async () => {
     let textCount = 0;
 
     // AAテキスト描画の設定
-    ctxC.fillStyle = "black";
-    ctxC.font = viewRange + "px MS Gothic";
+    bufCtx.fillStyle = "black";
+    bufCtx.font = viewRange + "px MS Gothic";
 
     // バイナリデータを4バイトずつ読み取り
     for (let i = 0; i < myImageData.data.length; i += 4) {
@@ -95,7 +100,7 @@ window.onload = async () => {
       textLineCount++;
 
       // テキスト描画
-      ctxC.fillText(
+      bufCtx.fillText(
         /* グレースケールを元にテキストを作る */
         colorset[Math.floor(((colorset.length - 1) * gray) / 255)],
         textCount * viewRange,
@@ -114,7 +119,7 @@ window.onload = async () => {
     }
 
     // 元動画のワイプ
-    ctxC.drawImage(
+    bufCtx.drawImage(
       video,
       aaCanvas.width - 288,
       aaCanvas.height - 162,
@@ -126,17 +131,20 @@ window.onload = async () => {
     frameCount++;
 
     // FPS描画
-    ctxC.fillStyle = "white";
-    ctxC.fillRect(aaCanvas.width - 100, 0, aaCanvas.width, 40);
-    ctxC.textAlign = "end";
-    ctxC.fillStyle = "green";
-    ctxC.font = "bold 30px MS Gothic";
+    bufCtx.fillStyle = "white";
+    bufCtx.fillRect(aaCanvas.width - 100, 0, aaCanvas.width, 40);
+    bufCtx.textAlign = "end";
+    bufCtx.fillStyle = "green";
+    bufCtx.font = "bold 30px MS Gothic";
     if (fpsTimer < Date.now()) {
       fpsTimer = Date.now() + 1000;
       fps = frameCount;
       frameCount = 0;
     }
-    ctxC.fillText(fps + "fps", aaCanvas.width, 30);
+    bufCtx.fillText(fps + "fps", aaCanvas.width, 30);
+
+    // バッファからフォアグラウンドへ描画
+    ctxC.drawImage(bufferCanvas, 0, 0, aaCanvas.width, aaCanvas.height);
 
     // 再帰処理
     requestAnimationFrame(view);
